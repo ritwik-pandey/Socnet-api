@@ -1,20 +1,7 @@
 const express = require('express');
 const router = new express.Router();
-
-const { database } = require('firebase-admin');
-
-// Connect to database
-const admin = require('firebase-admin');
-
-const serviceAccount = require('../socnet-api-296af-8b8d0a7ef564.json');
-
-
-admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount)
-});
-const db = admin.firestore();
-
-//Connection ended
+const bcrypt = require('bcrypt')
+const db = require('../db/firebase')
 
 
 // Register user
@@ -82,21 +69,25 @@ router.post('/verify', async (req, res) => {
 
 router.post('/login' , async (req , res) => {
     try{
-        const email = req.body.email
+        const username = req.body.username
         const password = req.body.password
 
         const users = db.collection('users');
-        const snapshot = await users.where('email', '==', email).get();
+        const snapshot = await users.where('username', '==', username).get();
         if (snapshot.empty) {
             res.status(404).send("Not found user");
         }
 
         snapshot.forEach(doc => {
-            if(doc.data().password == password && doc.data().confirmed == true){
-                res.status(200).send("Access granted!");
-            }else{
-                res.status(400).send("Wrong password");
-            }
+            bcrypt.compare(password, doc.data().password, function(err, result) {
+                if(err){
+                    res.status(400).send();
+                }else if(result == true && doc.data().confirmed == true){
+                    res.status(200).send("Access granted!");
+                }else {
+                    res.status(400).send("Wrong password");
+                }
+            });
         });
 
     }catch(e){
