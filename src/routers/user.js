@@ -1,7 +1,7 @@
 const express = require('express');
 const router = new express.Router();
 const bcrypt = require('bcrypt')
-const db = require('../db/firebase')
+const {db , admin} = require('../db/firebase')
 
 
 // Register user
