@@ -1,7 +1,11 @@
 const express = require('express');
 const router = new express.Router();
 const bcrypt = require('bcrypt')
-const {db , admin} = require('../db/firebase')
+var firebase = require('firebase');
+const jwt = require('jsonwebtoken')
+
+
+const { db, admin } = require('../db/firebase')
 
 
 // Register user
@@ -9,7 +13,7 @@ router.post('/users', async (req, res) => {
     try {
         const usersdata = db.collection('users').doc(req.body.username);
         const doc = await usersdata.get();
-        
+
         //Create document
         if (!doc.exists) {
             const data = {
@@ -17,7 +21,8 @@ router.post('/users', async (req, res) => {
                 password: req.body.password,
                 email: req.body.email,
                 uniqueString: req.body.uniqueString,
-                confirmed: false
+                confirmed: false,
+                tokens: []
             }
             const user = await db.collection('users').doc(req.body.username).set(data);
             res.status(200).send("Success");
@@ -67,8 +72,8 @@ router.post('/verify', async (req, res) => {
 
 //Log in
 
-router.post('/login' , async (req , res) => {
-    try{
+router.post('/login', async (req, res) => {
+    try {
         const username = req.body.username
         const password = req.body.password
 
@@ -78,22 +83,30 @@ router.post('/login' , async (req , res) => {
             res.status(404).send("Not found user");
         }
 
+
         snapshot.forEach(doc => {
-            bcrypt.compare(password, doc.data().password, function(err, result) {
-                if(err){
+            bcrypt.compare(password, doc.data().password, function (err, result) {
+                if (err) {
                     res.status(400).send();
-                }else if(result == true && doc.data().confirmed == true){
+                } else if (result == true && doc.data().confirmed == true) {
+                    //jwt
+                    const token = jwt.sign({username: doc.data().username} , 'thisismysecret')
+                    const documentref = db.collection('users').doc(doc.data().username);
+                    documentref.update({
+                        tokens: admin.firestore.FieldValue.arrayUnion(token)
+                    });
                     res.status(200).send("Access granted!");
-                }else {
+                } else {
                     res.status(400).send("Wrong password");
                 }
             });
         });
 
-    }catch(e){
+    } catch (e) {
         res.status(400).send(e);
     }
 })
+
 
 
 module.exports = router
