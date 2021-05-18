@@ -5,6 +5,7 @@ var firebase = require('firebase');
 const jwt = require('jsonwebtoken')
 
 
+
 const { db, admin } = require('../db/firebase')
 
 
@@ -22,7 +23,7 @@ router.post('/users', async (req, res) => {
                 email: req.body.email,
                 uniqueString: req.body.uniqueString,
                 confirmed: false,
-                tokens: []
+                token: ""
             }
             const user = await db.collection('users').doc(req.body.username).set(data);
             res.status(200).send("Success");
@@ -90,12 +91,14 @@ router.post('/login', async (req, res) => {
                     res.status(400).send();
                 } else if (result == true && doc.data().confirmed == true) {
                     //jwt
-                    const token = jwt.sign({username: doc.data().username} , 'thisismysecret')
-                    const documentref = db.collection('users').doc(doc.data().username);
-                    documentref.update({
-                        tokens: admin.firestore.FieldValue.arrayUnion(token)
-                    });
-                    res.status(200).send("Access granted!");
+                    const token = jwt.sign({ username: doc.data().username }, process.env.SECRET)
+                    db.collection('users').doc(doc.data().username).set({
+                        token: token
+                    }, { merge: true });
+                    
+
+                    res.status(200).send(token)
+
                 } else {
                     res.status(400).send("Wrong password");
                 }
