@@ -23,7 +23,10 @@ router.post('/users', async (req, res) => {
                 email: req.body.email,
                 uniqueString: req.body.uniqueString,
                 confirmed: false,
-                token: ""
+                token: "",
+                following: [],
+                followers: [],
+                posts: []
             }
             const user = await db.collection('users').doc(req.body.username).set(data);
             res.status(200).send("Success");
