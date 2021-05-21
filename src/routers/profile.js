@@ -11,10 +11,8 @@ router.use(cookieParser());
 const { db, admin } = require('../db/firebase')
 
 
-router.post('/unfollow' , auth , async (req , res) => {
-    try{
-
-        console.log("I cma");
+router.post('/unfollow', auth, async (req, res) => {
+    try {
 
         const userRef = db.collection('users').doc(req.body.username);
         const userRef1 = db.collection('users').doc(req.user.username);
@@ -28,7 +26,7 @@ router.post('/unfollow' , auth , async (req , res) => {
         });
 
         res.status(200).send();
-    }catch(e){
+    } catch (e) {
         res.status(400).send(e)
     }
 })
@@ -53,7 +51,7 @@ router.post('/follow', auth, async (req, res) => {
         });
 
         res.status(200).send()
-    }catch(e){
+    } catch (e) {
         res.status(400).send();
     }
 
@@ -63,15 +61,47 @@ router.post('/follow', auth, async (req, res) => {
 
 })
 
+router.post('/:username/followers', auth, async (req, res) => {
+    try {
+        const users = db.collection('users').doc(req.params.username);
+        const doc = await users.get();
+
+        const followers = doc.data().followers;
+        res.status(200).send(followers);
+    } catch (e) {
+        res.send("400").send();
+    }
+})
+
+router.post('/:username/following', auth, async (req, res) => {
+    try {
+        const users = db.collection('users').doc(req.params.username);
+        const doc = await users.get();
+
+        const following = doc.data().following;
+        res.status(200).send(following);
+    } catch (e) {
+        res.send("400").send();
+    }
+})
+
+router.post('/me' , auth , async (req , res) => {
+    try{
+        res.status(200).send(req.user.username)
+    }catch(e){
+        res.status(400).send()
+    }
+})
+
 router.post('/:username', auth, async (req, res) => {
 
     const users = db.collection('users').doc(req.params.username);
     const doc = await users.get();
-    
+
     const followers = doc.data().followers;
     let isFollowing = false;
     followers.forEach((element) => {
-        if(req.user.username === element) {
+        if (req.user.username === element) {
             isFollowing = true
         }
     })
