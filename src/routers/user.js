@@ -15,6 +15,8 @@ router.post('/users', async (req, res) => {
         const usersdata = db.collection('users').doc(req.body.username);
         const doc = await usersdata.get();
 
+        const postdata = db.collection('posts').doc(req.body.username);
+
         //Create document
         if (!doc.exists) {
             const data = {
@@ -25,10 +27,13 @@ router.post('/users', async (req, res) => {
                 confirmed: false,
                 token: "",
                 following: [],
-                followers: [],
-                posts: []
+                followers: []
             }
             const user = await db.collection('users').doc(req.body.username).set(data);
+            const postData = {
+                posts: []
+            }
+            const post = await db.collection('posts').doc(req.body.username).set(postData);
             res.status(200).send("Success");
 
         } else {
@@ -99,7 +104,6 @@ router.post('/login', async (req, res) => {
                         token: token
                     }, { merge: true });
                     
-
                     res.status(200).send(token)
 
                 } else {

@@ -66,6 +66,10 @@ router.post('/:username/followers', auth, async (req, res) => {
         const users = db.collection('users').doc(req.params.username);
         const doc = await users.get();
 
+        if (!doc.data()) {
+            res.status(404).send("No user found")
+        }
+
         const followers = doc.data().followers;
         res.status(200).send(followers);
     } catch (e) {
@@ -78,6 +82,10 @@ router.post('/:username/following', auth, async (req, res) => {
         const users = db.collection('users').doc(req.params.username);
         const doc = await users.get();
 
+        if (!doc.data()) {
+            res.status(404).send("No user found")
+        }
+
         const following = doc.data().following;
         res.status(200).send(following);
     } catch (e) {
@@ -85,10 +93,10 @@ router.post('/:username/following', auth, async (req, res) => {
     }
 })
 
-router.post('/me' , auth , async (req , res) => {
-    try{
+router.post('/me', auth, async (req, res) => {
+    try {
         res.status(200).send(req.user.username)
-    }catch(e){
+    } catch (e) {
         res.status(400).send()
     }
 })
@@ -98,6 +106,13 @@ router.post('/:username', auth, async (req, res) => {
     const users = db.collection('users').doc(req.params.username);
     const doc = await users.get();
 
+    if (!doc.data()) {
+        res.status(404).send("No user found")
+    }
+
+    const posts = db.collection('posts').doc(req.params.username);
+    const doc1 = await posts.get();
+
     const followers = doc.data().followers;
     let isFollowing = false;
     followers.forEach((element) => {
@@ -106,14 +121,13 @@ router.post('/:username', auth, async (req, res) => {
         }
     })
 
-    if (!doc.data()) {
-        res.status(404).send("No user found")
-    } else {
-        res.status(200).send({
-            user: doc.data(),
-            isFollowing: isFollowing
-        })
-    }
+
+    res.status(200).send({
+        user: doc.data(),
+        posts: doc1.data(),
+        isFollowing: isFollowing
+    })
+
 })
 
 
