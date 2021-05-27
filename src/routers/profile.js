@@ -112,6 +112,7 @@ router.post('/:username', auth, async (req, res) => {
 
     const posts = db.collection('posts').doc(req.params.username);
     const doc1 = await posts.get();
+    const postsNumber = Object.keys(doc1.data()).length;
 
     const followers = doc.data().followers;
     let isFollowing = false;
@@ -124,7 +125,7 @@ router.post('/:username', auth, async (req, res) => {
 
     res.status(200).send({
         user: doc.data(),
-        posts: doc1.data(),
+        posts: postsNumber,
         isFollowing: isFollowing
     })
 

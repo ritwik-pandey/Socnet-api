@@ -30,9 +30,11 @@ router.post('/users', async (req, res) => {
                 followers: []
             }
             const user = await db.collection('users').doc(req.body.username).set(data);
+            
             const postData = {
-                posts: []
+
             }
+
             const post = await db.collection('posts').doc(req.body.username).set(postData);
             res.status(200).send("Success");
 
