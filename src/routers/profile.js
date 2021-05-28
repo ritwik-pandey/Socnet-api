@@ -112,7 +112,10 @@ router.post('/:username', auth, async (req, res) => {
 
     const posts = db.collection('posts').doc(req.params.username);
     const doc1 = await posts.get();
-    const postsNumber = Object.keys(doc1.data()).length;
+    let postsNumber = 0;
+    if(doc1.data() != null){
+        postsNumber = Object.keys(doc1.data()).length;
+    }
 
     const followers = doc.data().followers;
     let isFollowing = false;
