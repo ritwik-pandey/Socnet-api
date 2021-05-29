@@ -25,7 +25,7 @@ router.post('/comment', auth, async (req, res) => {
 
         // usersComments[req.user.username] = 
 
-        if(oldComments === undefined){
+        if (oldComments === undefined) {
             oldComments = []
         }
 
@@ -47,6 +47,42 @@ router.post('/comment', auth, async (req, res) => {
         console.log(e);
         res.status(400).send()
     }
+})
+
+router.post('/seelikesandcomments', auth, async (req, res) => {
+    try {
+        const users = db.collection('posts').doc(req.body.user);
+        const doc = await users.get();
+
+        const data = doc.data();
+
+        const id = req.body.id;
+        const details = data[id];
+
+        let userLiked = false;
+        let likes = data[id].usersLiked;
+
+        //Check if user has liked the post
+
+        for(let i = 0 ; i < likes.length ; ++i){
+            console.log(likes[i]);
+            if(likes[i] === req.user.username){
+                userLiked = true;
+                break;
+            }
+        }
+
+
+        res.status(200).send({
+            details: details,
+            id: id,
+            isLiked: userLiked
+        })
+    }catch(e){
+        console.log(e);
+        res.status(400).send()
+    }
+    
 })
 
 

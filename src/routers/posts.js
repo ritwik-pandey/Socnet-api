@@ -35,7 +35,8 @@ router.post('/:username/posts', auth, async (req, res) => {
         let sortedObj = {};
         // Put keys in Array
         for (i in posts) {
-            i = i.substring(0, 15)
+            let index = i.length - req.body.user.length
+            i = i.substring(0, index)
             let no = parseInt(i, 10)
             keys.push(no);
         }
