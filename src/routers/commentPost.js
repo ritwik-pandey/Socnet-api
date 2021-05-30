@@ -65,7 +65,6 @@ router.post('/seelikesandcomments', auth, async (req, res) => {
         //Check if user has liked the post
 
         for(let i = 0 ; i < likes.length ; ++i){
-            console.log(likes[i]);
             if(likes[i] === req.user.username){
                 userLiked = true;
                 break;

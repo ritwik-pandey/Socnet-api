@@ -6,6 +6,7 @@ const passwordRouter = require('./routers/forgotpassword')
 const profileRouter = require('./routers/profile')
 const postsRouter = require('./routers/posts')
 const commentRouter = require('./routers/commentPost')
+const search = require('./routers/search')
 
 const port = process.env.PORT || 3000
 
@@ -15,6 +16,7 @@ app.use(userRouter)
 app.use(passwordRouter)
 app.use(postsRouter)
 app.use(commentRouter)
+app.use(search)
 app.use(profileRouter)
 
 
