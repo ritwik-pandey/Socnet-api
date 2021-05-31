@@ -82,7 +82,9 @@ router.post('/composeposts', auth, async (req, res) => {
                 usersComments: {
 
                 },
-                usersLiked: []
+                usersLiked: [],
+                shared: "",
+                sharedId: ""
             }
         });
 
@@ -107,12 +109,18 @@ router.post('/like', auth, async (req, res) => {
         let usersLiked = textUser[updateUserId].usersLiked;
         let comments = textUser[updateUserId].comments;
         let usersComments = textUser[updateUserId].usersComments;
+        let shared = textUser[updateUserId].shared
+        let sharedId = textUser[updateUserId].sharedId
+        if(shared === undefined){
+            shared = ""
+            sharedId = ""
+        }
 
         //Check if the user has already liked
 
         usersLiked.forEach(element => {
             if (element == req.user.username) {
-                alreadyLiked(likes, usersLiked, text, req.user.username, req.body.user, updateUserId, comments, usersComments);
+                alreadyLiked(likes, usersLiked, text, req.user.username, req.body.user, updateUserId, comments, usersComments , shared , sharedId);
                 throw new Error("Already liked");
             }
         });
@@ -128,7 +136,9 @@ router.post('/like', auth, async (req, res) => {
                 likes: likes,
                 usersLiked: usersLiked,
                 comments: comments,
-                usersComments: usersComments
+                usersComments: usersComments,
+                shared: shared,
+                sharedId: sharedId
             }
         });
         res.status(200).send()
@@ -141,7 +151,7 @@ router.post('/like', auth, async (req, res) => {
 
 })
 
-function alreadyLiked(likes, usersLiked, text, username, userWhosePostWasLiked, idOfUser , comments , usersComments) {
+function alreadyLiked(likes, usersLiked, text, username, userWhosePostWasLiked, idOfUser , comments , usersComments , shared , sharedId) {
     usersLiked.pop(username)
     likes = likes - 1
     db.collection('posts').doc(userWhosePostWasLiked).update({
@@ -150,7 +160,9 @@ function alreadyLiked(likes, usersLiked, text, username, userWhosePostWasLiked, 
             likes: likes,
             usersLiked: usersLiked,
             comments: comments,
-            usersComments: usersComments
+            usersComments: usersComments,
+            shared: shared,
+            sharedId: sharedId
         }
     });
 }

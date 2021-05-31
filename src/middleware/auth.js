@@ -1,5 +1,4 @@
 const jwt = require('jsonwebtoken')
-var firebase = require('firebase');
 const { db, admin } = require('../db/firebase');
 
 

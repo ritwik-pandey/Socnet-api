@@ -19,6 +19,12 @@ router.post('/comment', auth, async (req, res) => {
         let comments = posts[updateUserId].comments;
         comments = comments + 1;
         let usersComments = posts[updateUserId].usersComments;
+        let shared = posts[updateUserId].shared
+        let sharedId = posts[updateUserId].sharedId
+        if(shared === undefined){
+            shared = ""
+            sharedId = ""
+        }
 
         let oldComments = usersComments[req.user.username];
 
@@ -38,7 +44,9 @@ router.post('/comment', auth, async (req, res) => {
                 likes: likes,
                 usersLiked: usersLiked,
                 comments: comments,
-                usersComments: usersComments
+                usersComments: usersComments,
+                shared: shared,
+                sharedId: sharedId
             }
         });
 
