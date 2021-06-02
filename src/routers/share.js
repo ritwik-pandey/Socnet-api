@@ -11,6 +11,17 @@ router.post('/share', auth, async (req, res) => {
         const users = db.collection('posts').doc(req.body.username);
         const doc = await users.get();
 
+        const users1 = db.collection('posts').doc(req.user.username);
+        const doc1 = await users1.get();
+
+        let postData = doc1.data();
+
+        for(i in doc1.data()){
+            if(postData[i].sharedId === req.body.id){
+                throw new Error();
+            }
+        }
+
         var today = new Date();
         let month = (today.getMonth() + 1);
         month = (month < 10 ? '0' : '') + month;
@@ -21,10 +32,10 @@ router.post('/share', auth, async (req, res) => {
         const updateUserId = req.body.id;
         const textUser = doc.data()
         const text = textUser[updateUserId].text;
-        let likes = textUser[updateUserId].likes;
-        let usersLiked = textUser[updateUserId].usersLiked;
-        let comments = textUser[updateUserId].comments;
-        let usersComments = textUser[updateUserId].usersComments;
+        let likes = 0;
+        let usersLiked = [];
+        let comments = 0;
+        let usersComments = {};
 
         await db.collection('posts').doc(req.user.username).update({
             [nameId]: {
@@ -39,7 +50,6 @@ router.post('/share', auth, async (req, res) => {
         });
         res.status(200).send()
     } catch (e) {
-        console.log(e);
         res.status(400).send()
     }
 
