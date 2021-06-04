@@ -12,6 +12,7 @@ router.post('/comment', auth, async (req, res) => {
         const posts = doc.data()
 
         const updateUserId = req.body.id;
+        // console.log([updateUserId]);
 
         const text = posts[updateUserId].text;
         let likes = posts[updateUserId].likes;

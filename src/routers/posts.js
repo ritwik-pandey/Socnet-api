@@ -12,7 +12,7 @@ router.post('/:username/posts', auth, async (req, res) => {
         const doc = await users.get();
 
         if (!doc.data()) {
-            res.status(404).send("No user found")
+            throw new Error('No user found')
         }
 
         const posts = doc.data();
@@ -48,8 +48,11 @@ router.post('/:username/posts', auth, async (req, res) => {
         }
         res.status(200).send(sortedObj);
     } catch (e) {
-        console.log(e);
-        res.status(400).send();
+        if(e === 'No user found'){
+            res.status(404).send()
+        }else{
+            res.status(400).send();
+        }
     }
 })
 
@@ -98,9 +101,9 @@ router.post('/composeposts', auth, async (req, res) => {
 router.post('/like', auth, async (req, res) => {
 
     try {
+        // console.log("ok");
         const users = db.collection('posts').doc(req.body.user);
         const doc = await users.get();
-
 
         const updateUserId = req.body.id;
         const textUser = doc.data()
@@ -145,8 +148,9 @@ router.post('/like', auth, async (req, res) => {
     } catch (e) {
         if (e === "Already liked") {
             res.status(200).send()
+        }else{
+            res.status(400).send(e)
         }
-        res.status(400).send(e)
     }
 
 })
