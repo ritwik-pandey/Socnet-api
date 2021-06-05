@@ -4,6 +4,8 @@ require('dotenv').config()
 const homeRouter = require('./routers/home');
 const userRouter = require('./routers/user');
 const passwordRouter = require('./routers/forgotpassword');
+const deleteRouter = require('./routers/delete');
+const settingsRouter = require('./routers/settings');
 const profileRouter = require('./routers/profile');
 const postsRouter = require('./routers/posts');
 const viewPostRouter = require('./routers/viewPost');
@@ -14,8 +16,10 @@ const port = process.env.PORT || 3000
 
 
 app.use(express.json());
-app.use(homeRouter)
+app.use(homeRouter);
 app.use(userRouter);
+app.use(settingsRouter)
+app.use(deleteRouter);
 app.use(passwordRouter);
 app.use(postsRouter);
 app.use(viewPostRouter);

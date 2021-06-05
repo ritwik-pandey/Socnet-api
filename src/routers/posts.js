@@ -20,6 +20,11 @@ router.post('/:username/posts', auth, async (req, res) => {
             let usersLiked = posts[i].usersLiked;
 
             posts[i].isLiked = false;
+            if(req.user.username === req.params.username){
+                posts[i].ismyprofile = "yes";
+            }else{
+                posts[i].ismyprofile = "no";
+            }
 
             for (let j = 0; j < usersLiked.length; ++j) {
                 if (usersLiked[j] == req.user.username) {
