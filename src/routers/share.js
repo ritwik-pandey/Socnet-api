@@ -48,8 +48,15 @@ router.post('/share', auth, async (req, res) => {
                 sharedId: updateUserId
             }
         });
+
+        const myShare = 'shares.' + nameId;
+
+        db.collection('userLikesAndComments').doc(req.user.username).update({
+            [myShare]: '' + req.body.username + ''
+        })
         res.status(200).send()
     } catch (e) {
+        console.log(e);
         res.status(400).send()
     }
 

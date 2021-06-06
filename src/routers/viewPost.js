@@ -51,6 +51,12 @@ router.post('/comment', auth, async (req, res) => {
             }
         });
 
+        const myComments = 'comments.' + updateUserId;
+
+        db.collection('userLikesAndComments').doc(req.user.username).update({
+            [myComments]: req.body.user
+        })
+
         res.status(200).send()
     } catch (e) {
         console.log(e);

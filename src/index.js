@@ -1,6 +1,6 @@
+require('dotenv').config()
 const express = require('express');
 const app = express();
-require('dotenv').config()
 const homeRouter = require('./routers/home');
 const userRouter = require('./routers/user');
 const passwordRouter = require('./routers/forgotpassword');

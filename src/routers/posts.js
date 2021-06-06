@@ -20,9 +20,9 @@ router.post('/:username/posts', auth, async (req, res) => {
             let usersLiked = posts[i].usersLiked;
 
             posts[i].isLiked = false;
-            if(req.user.username === req.params.username){
+            if (req.user.username === req.params.username) {
                 posts[i].ismyprofile = "yes";
-            }else{
+            } else {
                 posts[i].ismyprofile = "no";
             }
 
@@ -53,9 +53,9 @@ router.post('/:username/posts', auth, async (req, res) => {
         }
         res.status(200).send(sortedObj);
     } catch (e) {
-        if(e === 'No user found'){
+        if (e === 'No user found') {
             res.status(404).send()
-        }else{
+        } else {
             res.status(400).send();
         }
     }
@@ -119,7 +119,7 @@ router.post('/like', auth, async (req, res) => {
         let usersComments = textUser[updateUserId].usersComments;
         let shared = textUser[updateUserId].shared
         let sharedId = textUser[updateUserId].sharedId
-        if(shared === undefined){
+        if (shared === undefined) {
             shared = ""
             sharedId = ""
         }
@@ -128,7 +128,7 @@ router.post('/like', auth, async (req, res) => {
 
         usersLiked.forEach(element => {
             if (element == req.user.username) {
-                alreadyLiked(likes, usersLiked, text, req.user.username, req.body.user, updateUserId, comments, usersComments , shared , sharedId);
+                alreadyLiked(likes, usersLiked, text, req.user.username, req.body.user, updateUserId, comments, usersComments, shared, sharedId);
                 throw new Error("Already liked");
             }
         });
@@ -149,18 +149,34 @@ router.post('/like', auth, async (req, res) => {
                 sharedId: sharedId
             }
         });
+
+        const myLikes = 'likes.' + updateUserId;
+
+        const usersLikes = db.collection('userLikesAndComments').doc(req.user.username).update({
+            [myLikes]: '' + req.body.user + ''
+        })
+
         res.status(200).send()
     } catch (e) {
         if (e === "Already liked") {
             res.status(200).send()
-        }else{
+        } else {
             res.status(400).send(e)
         }
     }
 
 })
 
-function alreadyLiked(likes, usersLiked, text, username, userWhosePostWasLiked, idOfUser , comments , usersComments , shared , sharedId) {
+function alreadyLiked(likes, usersLiked, text, username, userWhosePostWasLiked, idOfUser, comments, usersComments, shared, sharedId) {
+    const FieldValue = admin.firestore.FieldValue;
+
+    
+    const userLikesAndComments = db.collection('userLikesAndComments').doc(username);
+
+    const myLikes = 'likes.' + idOfUser;
+    userLikesAndComments.update({
+        [myLikes]: FieldValue.delete()
+    });
     usersLiked.pop(username)
     likes = likes - 1
     db.collection('posts').doc(userWhosePostWasLiked).update({

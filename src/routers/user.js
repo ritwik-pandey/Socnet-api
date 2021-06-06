@@ -35,7 +35,13 @@ router.post('/users', async (req, res) => {
 
             }
 
-            const post = await db.collection('posts').doc(req.body.username).set(postData);
+            const userLikesAndCommentsData = {
+
+            }
+
+            await db.collection('userLikesAndComments').doc(req.body.username).set(userLikesAndCommentsData);            
+
+            await db.collection('posts').doc(req.body.username).set(postData);
             res.status(200).send("Success");
 
         } else {
