@@ -51,8 +51,8 @@ router.post('/share', auth, async (req, res) => {
 
         const myShare = 'shares.' + nameId;
 
-        db.collection('userLikesAndComments').doc(req.user.username).update({
-            [myShare]: '' + req.body.username + ''
+        db.collection('userLikesAndComments').doc(req.body.username).update({
+            [myShare]: '' + req.user.username + ''
         })
         res.status(200).send()
     } catch (e) {
