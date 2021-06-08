@@ -50,6 +50,14 @@ router.post('/follow', auth, async (req, res) => {
             following: admin.firestore.FieldValue.arrayUnion(req.body.username)
         });
 
+        //Insert notification
+
+        const notifications = db.collection('notifications').doc(req.body.username);
+        let notificationText = '<a class="notification-link" href="/' + req.user.username + '"> ' + req.user.username + '</a> <p class="notification-paragraph">started following you</p>'
+        await notifications.update({
+            notifications: admin.firestore.FieldValue.arrayUnion(notificationText)
+        });
+
         res.status(200).send()
     } catch (e) {
         res.status(400).send();

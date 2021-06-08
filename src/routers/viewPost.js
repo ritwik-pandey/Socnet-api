@@ -22,6 +22,7 @@ router.post('/comment', auth, async (req, res) => {
         let usersComments = posts[updateUserId].usersComments;
         let shared = posts[updateUserId].shared
         let sharedId = posts[updateUserId].sharedId
+        let usersWhoShared = posts[updateUserId].usersWhoShared;
         if(shared === undefined){
             shared = ""
             sharedId = ""
@@ -47,7 +48,8 @@ router.post('/comment', auth, async (req, res) => {
                 comments: comments,
                 usersComments: usersComments,
                 shared: shared,
-                sharedId: sharedId
+                sharedId: sharedId,
+                usersWhoShared: usersWhoShared
             }
         });
 
@@ -56,6 +58,15 @@ router.post('/comment', auth, async (req, res) => {
         db.collection('userLikesAndComments').doc(req.user.username).update({
             [myComments]: req.body.user
         })
+
+        //Insert Notification
+
+        const notifications = db.collection('notifications').doc(req.body.user);
+        let onClickText = "showPostNotification('" + req.body.user + "' , '" + updateUserId + "')"
+        let notificationText = '<a class="notification-link" href="/' + req.user.username + '"> ' + req.user.username + '</a> <p onClick="' + onClickText + '" class="notification-paragraph" id="' + updateUserId + '">commented on your post</p>'
+        await notifications.update({
+            notifications: admin.firestore.FieldValue.arrayUnion(notificationText)
+        });
 
         res.status(200).send()
     } catch (e) {

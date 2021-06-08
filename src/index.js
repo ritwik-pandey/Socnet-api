@@ -6,6 +6,7 @@ const userRouter = require('./routers/user');
 const passwordRouter = require('./routers/forgotpassword');
 const deleteRouter = require('./routers/delete');
 const settingsRouter = require('./routers/settings');
+const notificationsRouter = require('./routers/notifications');
 const profileRouter = require('./routers/profile');
 const postsRouter = require('./routers/posts');
 const viewPostRouter = require('./routers/viewPost');
@@ -22,6 +23,7 @@ app.use(settingsRouter)
 app.use(deleteRouter);
 app.use(passwordRouter);
 app.use(postsRouter);
+app.use(notificationsRouter);
 app.use(viewPostRouter);
 app.use(share);
 app.use(search);

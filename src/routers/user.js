@@ -39,9 +39,15 @@ router.post('/users', async (req, res) => {
 
             }
 
+            const notifications = {
+                notifications: [],
+                username: req.body.username
+            }
+
             await db.collection('userLikesAndComments').doc(req.body.username).set(userLikesAndCommentsData);            
 
             await db.collection('posts').doc(req.body.username).set(postData);
+            await db.collection('notifications').doc(req.body.username).set(notifications);
             res.status(200).send("Success");
 
         } else {

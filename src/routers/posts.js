@@ -92,7 +92,10 @@ router.post('/composeposts', auth, async (req, res) => {
                 },
                 usersLiked: [],
                 shared: "",
-                sharedId: ""
+                sharedId: "",
+                usersWhoShared: {
+
+                }
             }
         });
 
@@ -106,7 +109,6 @@ router.post('/composeposts', auth, async (req, res) => {
 router.post('/like', auth, async (req, res) => {
 
     try {
-        // console.log("ok");
         const users = db.collection('posts').doc(req.body.user);
         const doc = await users.get();
 
@@ -119,6 +121,7 @@ router.post('/like', auth, async (req, res) => {
         let usersComments = textUser[updateUserId].usersComments;
         let shared = textUser[updateUserId].shared
         let sharedId = textUser[updateUserId].sharedId
+        let usersWhoShared = textUser[updateUserId].usersWhoShared
         if (shared === undefined) {
             shared = ""
             sharedId = ""
@@ -128,7 +131,7 @@ router.post('/like', auth, async (req, res) => {
 
         usersLiked.forEach(element => {
             if (element == req.user.username) {
-                alreadyLiked(likes, usersLiked, text, req.user.username, req.body.user, updateUserId, comments, usersComments, shared, sharedId);
+                alreadyLiked(likes, usersLiked, text, req.user.username, req.body.user, updateUserId, comments, usersComments, shared, sharedId , usersWhoShared);
                 throw new Error("Already liked");
             }
         });
@@ -146,7 +149,8 @@ router.post('/like', auth, async (req, res) => {
                 comments: comments,
                 usersComments: usersComments,
                 shared: shared,
-                sharedId: sharedId
+                sharedId: sharedId,
+                usersWhoShared: usersWhoShared
             }
         });
 
@@ -156,8 +160,18 @@ router.post('/like', auth, async (req, res) => {
             [myLikes]: '' + req.body.user + ''
         })
 
+
+        //Insert notification of likes
+        const notifications = db.collection('notifications').doc(req.body.user);
+        let onClickText = "showPostNotification('" + req.body.user + "' , '" + updateUserId + "')"
+        let notificationText = '<a class="notification-link" href="/' + req.user.username + '"> ' + req.user.username + '</a> <p onClick="' + onClickText + '" class="notification-paragraph" id="' + updateUserId + '">liked your post</p>'
+        await notifications.update({
+            notifications: admin.firestore.FieldValue.arrayUnion(notificationText)
+        });
+
         res.status(200).send()
     } catch (e) {
+        console.log(e);
         if (e === "Already liked") {
             res.status(200).send()
         } else {
@@ -167,10 +181,10 @@ router.post('/like', auth, async (req, res) => {
 
 })
 
-function alreadyLiked(likes, usersLiked, text, username, userWhosePostWasLiked, idOfUser, comments, usersComments, shared, sharedId) {
+function alreadyLiked(likes, usersLiked, text, username, userWhosePostWasLiked, idOfUser, comments, usersComments, shared, sharedId, usersWhoShared) {
     const FieldValue = admin.firestore.FieldValue;
 
-    
+
     const userLikesAndComments = db.collection('userLikesAndComments').doc(username);
 
     const myLikes = 'likes.' + idOfUser;
@@ -187,8 +201,18 @@ function alreadyLiked(likes, usersLiked, text, username, userWhosePostWasLiked, 
             comments: comments,
             usersComments: usersComments,
             shared: shared,
-            sharedId: sharedId
+            sharedId: sharedId,
+            usersWhoShared: usersWhoShared
         }
+    });
+
+    //Remove notification
+
+    const notifications = db.collection('notifications').doc(userWhosePostWasLiked);
+    let onClickText = "showPostNotification('" + userWhosePostWasLiked + "' , '" + idOfUser + "')"
+    let notificationText = '<a class="notification-link" href="/' + username + '"> ' + username + '</a> <p onClick="' + onClickText + '" class="notification-paragraph" id="' + idOfUser + '">liked your post</p>'
+    notifications.update({
+        notifications: admin.firestore.FieldValue.arrayRemove(notificationText)
     });
 }
 

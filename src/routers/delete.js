@@ -22,7 +22,7 @@ router.post('/deleteProfileFinal', auth, async (req, res) => {
                 db.collection('users').doc(req.user.username).delete();
                 db.collection('posts').doc(req.user.username).delete();
                 db.collection('userLikesAndComments').doc(req.user.username).delete();
-                res.status(200).send()  
+                res.status(200).send()
 
 
             } else {
@@ -87,10 +87,10 @@ async function deleteAllActivity(user) {
 async function deleteLike(likedUsername, postId, user) {
     try {
         const postsRef = db.collection('posts').doc(likedUsername);
-        const doc =  await postsRef.get();
+        const doc = await postsRef.get();
         const postUser = doc.data()
 
-        if(postUser === undefined){
+        if (postUser === undefined || postUser[postId] === undefined) {
             return;
         }
 
@@ -124,7 +124,7 @@ async function deleteLike(likedUsername, postId, user) {
                 sharedId: sharedId
             }
         });
-        
+
     } catch (e) {
         console.log(e);
     }
@@ -136,10 +136,10 @@ async function deleteLike(likedUsername, postId, user) {
 async function deleteComments(commentedUsername, commentId, user) {
     try {
         const postsRef1 = db.collection('posts').doc(commentedUsername);
-        const doc1 =  await postsRef1.get();
+        const doc1 = await postsRef1.get();
         const postUser = doc1.data();
-        
-        if(postUser === undefined){
+
+        if (postUser === undefined || postUser[commentId] === undefined) {
             return;
         }
 
@@ -181,12 +181,20 @@ async function deleteComments(commentedUsername, commentId, user) {
 
 async function deleteShares(sharedUsername, userSharedId) {
 
+    const postsRef2 = db.collection('posts').doc(sharedUsername);
+    const doc2 = await postsRef2.get();
+    const postUser = doc2.data();
+
+    if (postUser === undefined || postUser[userSharedId] === undefined) {
+        return;
+    }
+
     const FieldValue = admin.firestore.FieldValue;
 
 
     const postsRef = db.collection('posts').doc(sharedUsername);
 
-    if(sharedUsername[userSharedId] === undefined){
+    if (userSharedId === undefined) {
         return;
     }
 
@@ -203,12 +211,30 @@ router.post('/deletepost', auth, async (req, res) => {
         const postsRef = db.collection('posts').doc(req.body.user);
         const posttodelete = req.body.id;
 
+        const doc = await postsRef.get();
+        let data = doc.data();
+        let shares = data[req.body.id].usersWhoShared;
+        for (i in shares) {
+            const whoShared = db.collection('posts').doc(shares[i]);
+            const doc1 = await whoShared.get();
+            const whoSharedData = doc1.data();
+            if (whoSharedData[i] === undefined) {
+                continue;
+            } else {
+                await whoShared.update({
+                    [i]: FieldValue.delete()
+                });
+
+            }
+        }
+
         await postsRef.update({
             [posttodelete]: FieldValue.delete()
         });
 
         res.status(200).send()
     } catch (error) {
+        console.log(error);
         res.status(400).send()
     }
 })
