@@ -1,6 +1,7 @@
 const express = require('express');
 const router = new express.Router();
 const bcrypt = require('bcrypt')
+const saltRounds = 10;
 var firebase = require('firebase');
 const jwt = require('jsonwebtoken')
 
@@ -8,53 +9,86 @@ const jwt = require('jsonwebtoken')
 
 const { db, admin } = require('../db/firebase')
 
+checkEmail = async (email, _callback) => {
+    const users = db.collection('users');
+    const snapshot = await users.where('confirmed', '==', true).get();
+    let flag = true;
+    if (snapshot.empty) {
+        _callback(flag);
+    }
+
+    let count = 0;
+    snapshot.forEach(doc => {
+        bcrypt.compare(email, doc.data().email).then(function (result) {
+
+            //All conditions are true
+            if (result === true) {
+                flag = false;
+            }
+            count++;
+            if (count === snapshot.size) {
+                _callback(flag);
+            }
+        })
+    })
+
+}
+
 
 // Register user
 router.post('/users', async (req, res) => {
     try {
-        const usersdata = db.collection('users').doc(req.body.username);
-        const doc = await usersdata.get();
+        checkEmail(req.body.email, async (response) => {
+            if (response === false) {
+                res.status(400).send('Email already taken')
+            } else {
+                const usersdata = db.collection('users').doc(req.body.username);
+                const doc = await usersdata.get();
+                const emailhash = bcrypt.hashSync(req.body.email, saltRounds);
 
-        const postdata = db.collection('posts').doc(req.body.username);
+                //Create document
+                if (!doc.exists) {
+                    const data = {
+                        username: req.body.username,
+                        password: req.body.password,
+                        email: emailhash,
+                        uniqueString: req.body.uniqueString,
+                        confirmed: false,
+                        token: "",
+                        following: [],
+                        followers: []
+                    }
+                    const user = await db.collection('users').doc(req.body.username).set(data);
 
-        //Create document
-        if (!doc.exists) {
-            const data = {
-                username: req.body.username,
-                password: req.body.password,
-                email: req.body.email,
-                uniqueString: req.body.uniqueString,
-                confirmed: false,
-                token: "",
-                following: [],
-                followers: []
+                    const postData = {
+
+                    }
+
+                    const userLikesAndCommentsData = {
+
+                    }
+
+                    const notifications = {
+                        notifications: [],
+                        username: req.body.username
+                    }
+
+                    await db.collection('userLikesAndComments').doc(req.body.username).set(userLikesAndCommentsData);
+
+                    await db.collection('posts').doc(req.body.username).set(postData);
+                    await db.collection('notifications').doc(req.body.username).set(notifications);
+                    res.status(200).send("Success");
+
+                } else {
+                    res.status(400).send('Name is already taken!')
+                }
             }
-            const user = await db.collection('users').doc(req.body.username).set(data);
-            
-            const postData = {
+        })
 
-            }
 
-            const userLikesAndCommentsData = {
 
-            }
 
-            const notifications = {
-                notifications: [],
-                username: req.body.username
-            }
-
-            await db.collection('userLikesAndComments').doc(req.body.username).set(userLikesAndCommentsData);            
-
-            await db.collection('posts').doc(req.body.username).set(postData);
-            await db.collection('notifications').doc(req.body.username).set(notifications);
-            res.status(200).send("Success");
-
-        } else {
-            res.status(400).send('Name is already taken!')
-        }
     } catch (e) {
-        console.log(e);
         res.status(400).send(e);
     }
 })
@@ -117,7 +151,7 @@ router.post('/login', async (req, res) => {
                     db.collection('users').doc(doc.data().username).set({
                         token: token
                     }, { merge: true });
-                    
+
                     res.status(200).send(token)
 
                 } else {

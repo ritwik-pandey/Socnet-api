@@ -17,6 +17,8 @@ router.post('/:username/posts', auth, async (req, res) => {
 
         const posts = doc.data();
         for (i in posts) {
+            posts[i].text = posts[i].text.substring(0 , 20);
+            posts[i].text = posts[i].text + " ..."
             let usersLiked = posts[i].usersLiked;
 
             posts[i].isLiked = false;
@@ -79,8 +81,10 @@ router.post('/composeposts', auth, async (req, res) => {
         var time = today.getFullYear() + "" + month + "" + today.getDate() + "" + today.getHours() + "" + today.getMinutes() + "" + today.getSeconds();
         let timeUser = time.toString();
 
-        const post = req.body.post;
+        let post = req.body.post;
         let nameId = timeUser + req.user.username
+
+        post = post.substring(0 , 240);
 
         await db.collection('posts').doc(req.user.username).update({
             [nameId]: {

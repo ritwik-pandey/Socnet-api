@@ -17,6 +17,8 @@ router.post('/', auth, async (req, res) => {
             let doc1 = await posts.get();
             let data = doc1.data();
             for(j in data){
+                data[j].text = data[j].text.substring(0 , 20);
+                data[j].text = data[j].text + ' ...'
                 let isLiked = false;
                 for(let l = 0 ; l < data[j].usersLiked.length ; ++l){
                     if(data[j].usersLiked[l] === req.user.username){
